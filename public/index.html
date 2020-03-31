@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Lijstje rangschikken</title>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css">
+  <style>
+      @font-face {
+        font-family: 'DinEngschrift';
+        src: url("http://www.musicmeter.nl/libs/fonts/dinengschrift-webfont.eot?#iefix") format("embedded-opentype"), url("http://www.musicmeter.nl/libs/fonts/dinengschrift-webfont.ttf") format("truetype"), url("http://www.musicmeter.nl/libs/fonts/dinengschrift-webfont.woff") format("woff");
+      }
+
+      body {
+        padding: 0;
+        margin: 10px;
+        font-family: OpenSansRegular, Arial;
+        font-size: 14px;
+        -webkit-text-size-adjust: none;
+        -ms-text-size-adjust: none;
+        -moz-text-size-adjust: none;
+        text-size-adjust: none;
+        background-color: #f1f1f1;
+        //color: #FFF;
+      }
+
+      textarea {
+        width: 100%;
+        height: 200px;
+        min-height: 180px;
+        resize: both;
+      }
+
+
+      #sortable {
+          margin: 20px 0px;
+      }
+
+      #sortable li {
+        background: none;
+        background-color: #fff;
+        border: 1px solid #BDB3B3;
+        border-radius: 5px;
+        margin: 5px 0px;
+        padding: 5px;
+        cursor: move;
+        color: #000;
+        font-size: 16px;
+      }
+
+      #sortable .ui-icon {
+        position: relative;
+        float: right;
+      }
+
+      .toonlater{
+        display: none;
+      }
+
+      button{
+        font-size: 16px;
+      }
+
+/*       #btn{
+        width: 100%;
+        font-size: 24px;
+        border-radius: 5px;
+        padding: 5px;
+        background-color: black;
+        color:white;
+        cursor: pointer;
+        font-family: sans-serif;
+      }
+*/
+  </style>
+  <script>
+    $(document).ready(function() {
+       $("#btn").click(function(){
+          var listItems = $('#inputArea').val().split('\n');
+
+          var ldje;
+          for (ldje in listItems) {
+            $('<li/>', {
+              class: 'ui-state-default',
+              id: 'newItem',
+              text: 'testje'
+            }).appendTo('#sortable');
+            $('#newItem').text(listItems[ldje]);
+            $('<span/>', {
+              class: 'ui-icon ui-icon-arrowthick-2-n-s',
+            }).prependTo('#newItem');
+            $('#newItem').removeAttr("id");
+          }
+
+          $( "#sortable" ).sortable({
+           update: function( event, ui ) {
+              updateLijstje();
+            }
+          });
+
+          updateLijstje();
+
+          $(".ingeven").hide("fast");
+          $(".toonlater").show("fast");
+      });
+
+    });
+
+         function updateLijstje(){
+          var toonNummer = document.getElementById("toonNummers").checked;
+          $("#outputArea").text("");
+          var $lis = $('ol li');
+          var lijstje = "";
+          if(toonNummer){
+            for(var i=0; i < $lis.length; i++)
+            {
+              if(i+1 > 9){
+                lijstje += i+1+". "+$('ol li:eq(' + i + ')').text()+"<br>";
+              }else{
+                lijstje += "0"+(i+1)+". "+$('ol li:eq(' + i + ')').text()+"<br>";
+              }
+            }
+          }else{
+            for(var i=0; i < $lis.length; i++)
+            {
+                lijstje += $('ol li:eq(' + i + ')').text()+"<br>";
+            }
+          }
+          
+          $("#outputArea").append(lijstje);
+        }
+
+    function saveTextAsFile()
+      {
+          var $lis = $('ol li');
+          var lijstje = "";
+          if(document.getElementById("toonNummers").checked){
+            for(var i=0; i < $lis.length; i++)
+            {
+              if(i+1 > 9){
+                lijstje += i+1+".\u0020"+$('ol li:eq(' + i + ')').text()+"\r";
+              }else{
+                lijstje += "0"+(i+1)+".\u0020"+$('ol li:eq(' + i + ')').text()+"\r";
+              }
+              lijstje += "\n";
+            }
+          }else{
+            for(var i=0; i < $lis.length; i++)
+            {
+              lijstje += $('ol li:eq(' + i + ')').text()+"\r";
+              lijstje += "\n";
+            }
+          }
+        //var textToWrite = document.getElementById("outputArea").value;
+        //var textToWrite = $("#outputArea").text().toString();
+        var textToWrite = lijstje;
+        var textFileAsBlob = new Blob([textToWrite], {type:'text/plain'});
+        var fileNameToSaveAs = document.getElementById("inputFileNameToSaveAs").value;
+        
+        var downloadLink = document.createElement("a");
+        downloadLink.download = fileNameToSaveAs;
+        downloadLink.innerHTML = "Download File";
+        if (window.webkitURL != null)
+        {
+          // Chrome allows the link to be clicked
+          // without actually adding it to the DOM.
+          downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+        }
+        else
+        {
+          // Firefox requires the link to be added to the DOM
+          // before it can be clicked.
+          downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+          downloadLink.onclick = destroyClickedElement;
+          downloadLink.style.display = "none";
+          document.body.appendChild(downloadLink);
+        }
+
+        downloadLink.click();
+      }
+  </script>
+</head>
+<body>
+
+<div class="ingeven">
+  <p>Kopieer of typ hier het lijstje dat je wilt rangschikken:</p>
+  <p>(elke nieuwe lijn is een item)</p>
+  <textarea id="inputArea" class="ingeven">
+Arcade Fire - Neighborhood #1 (Tunnels)
+Arcade Fire - Rebellion (Lies)
+Band of Horses – The Funeral
+Bruce Springsteen – Born to Run
+David Bowie - "Heroes"
+David Bowie – Lazarus
+David Bowie – Life On Mars
+Depeche Mode - Enjoy The Silence
+DJ Shadow - Stem/Long Stem
+Elliott Smith - Waltz #2
+Kate Bush - Wuthering Heights
+Massive Attack - Unfinished Sympathy
+Neutral Milk Hotel - In The Aeroplane Over The Sea
+New Order - Blue Monday
+Nina Simone - Sinnerman
+Pearl Jam - Black
+Pixies - Debaser
+Pulp - Common People
+Radiohead - Exit Music (For A Film)
+Radiohead - Paranoid Android
+Radiohead - Street Spirit (Fade Out)
+Sigur Rós - Untitled 8 (Popplagið) - YouTube
+Songs: Ohia - Lioness 
+Sufjan Stevens - John Wayne Gacy Jr.
+Talking Heads – Once In a Lifetime
+Tame Impala - Let It Happen
+The Beatles - A Day In The Life
+The Cure - A Forest
+The Rolling Stones - Gimme Shelter
+The Smiths - How Soon Is Now?
+The Smiths - There Is A Light That Never Goes Out
+The Velvet Underground - Venus In Furs </textarea><br>
+  <button id="btn">Begin met rangschikken</button>
+</div>
+
+<div class="toonlater">
+  <p>Je kan de volgorde aanpassen door de items in de lijst te verslepen.</p>
+  <ol id="sortable">
+  </ol><br>
+  <label>
+    <input type="checkbox" id="toonNummers" checked="true" onclick ="updateLijstje()" name="checkbox1" >Toon nummering</input>
+  </label>
+  <p >Mooi selecteerbaar lijstje:</p>
+  <p id="outputArea">...</p>
+  Bestandsnaam: <input type="text" name="filename" id="inputFileNameToSaveAs" value="top32">
+  <button onclick="saveTextAsFile()">Sla op in tekstbestand</button></td>
+ </div>
+</body>
+</html>
